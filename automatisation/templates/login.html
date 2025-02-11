@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentification</title>
+    {% load static %}
+
+    <!-- Lien vers Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('{% static "images/Siège-Sonatel.jpg" %}') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-container h1 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .auth-container .form-control {
+            margin-bottom: 1rem;
+        }
+
+        .auth-container .btn-primary {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .auth-container .btn-primary:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+
+        .auth-container .error-message {
+            color: red;
+            margin-bottom: 1rem;
+        }
+
+        .auth-container .forgot-password {
+            margin-top: 1rem;
+        }
+
+        .auth-container .forgot-password a {
+            color: #2575fc;
+            text-decoration: none;
+        }
+
+        .auth-container .forgot-password a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <!-- Lien vers Bootstrap JS et dépendances -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function validateCredentials(event) {
+            event.preventDefault();
+            const username = document.querySelector('input[name="username"]').value.trim();
+            const password = document.querySelector('input[name="password"]').value.trim();
+
+            // Identifiants valides
+            const validUsername = "dieynaba.sall2@orange-sonatel.com";
+            const validPassword = "Sonatel2024";
+
+            // Vérification des identifiants
+            if (username === validUsername && password === validPassword) {
+                window.location.href = "/index/";
+            } else {
+                const errorMessage = document.querySelector('.error-message');
+                errorMessage.textContent = "Nom d'utilisateur ou mot de passe incorrect.";
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Connexion</h1>
+        <form method="GET" onsubmit="validateCredentials(event)">
+            <input type="text" name="username" class="form-control" placeholder="Nom d'utilisateur" required>
+            <input type="password" name="password" class="form-control" placeholder="Mot de passe" required>
+            <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+            <div class="error-message"></div>
+        </form>
+    </div>
+</body>
+</html>

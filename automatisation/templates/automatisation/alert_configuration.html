@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Formulaire de configuration -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Configurer une nouvelle alerte</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="use_case" class="form-label">Use Case</label>
+                            <select class="form-select" id="use_case" name="use_case" required>
+                                <option value="">Sélectionner un use case</option>
+                                {% for use_case in use_cases %}
+                                <option value="{{ use_case.id }}">
+                                    {{ use_case.canal.code }} - {{ use_case.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter l'alerte</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des alertes configurées -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Alertes configurées</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Canal</th>
+                                    <th>Use Case</th>
+                                    <th>Email</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in user_alerts %}
+                                <tr>
+                                    <td>{{ alert.use_case.canal.code }}</td>
+                                    <td>{{ alert.use_case.nom }}</td>
+                                    <td>{{ alert.email }}</td>
+                                    <td>
+                                        <form method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucune alerte configurée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
