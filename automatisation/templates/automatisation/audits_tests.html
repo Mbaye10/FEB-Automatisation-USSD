@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filtres d'Audit</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Date début</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">Date fin</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="canal" class="form-label">Canal USSD</label>
+                            <select class="form-select" id="canal" name="canal">
+                                <option value="">Tous les canaux</option>
+                                {% for canal in canaux %}
+                                <option value="{{ canal.id }}" {% if selected_canal == canal.id %}selected{% endif %}>
+                                    {{ canal.code }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Statut</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Tous les statuts</option>
+                                <option value="OK" {% if selected_status == 'OK' %}selected{% endif %}>OK</option>
+                                <option value="NOK" {% if selected_status == 'NOK' %}selected{% endif %}>NOK</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Filtrer
+                            </button>
+                            <a href="{% url 'export_audit' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                                <i class="fas fa-file-excel me-2"></i>Exporter
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats des tests -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Résultats des Tests</h5>
+                    <span class="badge bg-light text-dark">
+                        Total: {{ tests|length }} test(s)
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="auditTable">
+                            <thead>
+                                <tr>
+                                    <th>Date/Heure</th>
+                                    <th>Canal</th>
+                                    <th>Use Case</th>
+                                    <th>Numéro</th>
+                                    <th>Statut</th>
+                                    <th>Durée (s)</th>
+                                    <th>Message</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in tests %}
+                                <tr class="{% if test.status == 'NOK' %}table-danger{% endif %}">
+                                    <td>{{ test.date_test|date:"d/m/Y H:i:s" }}</td>
+                                    <td>{{ test.use_case.canal.code }}</td>
+                                    <td>{{ test.use_case.nom }}</td>
+                                    <td>{{ test.numero_test }}</td>
+                                    <td>
+                                        {% if test.status == 'OK' %}
+                                        <span class="badge bg-success">OK</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">NOK</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ test.duree_test|floatformat:2 }}</td>
+                                    <td>{{ test.message_erreur|default:"-" }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ test.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal Détails -->
+                                <div class="modal fade" id="detailModal{{ test.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Détails du Test</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Informations Générales</h6>
+                                                        <table class="table table-sm">
+                                                            <tr>
+                                                                <th>Date/Heure:</th>
+                                                                <td>{{ test.date_test|date:"d/m/Y H:i:s" }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Canal:</th>
+                                                                <td>{{ test.use_case.canal.code }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Use Case:</th>
+                                                                <td>{{ test.use_case.nom }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Numéro:</th>
+                                                                <td>{{ test.numero_test }}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Résultats</h6>
+                                                        <table class="table table-sm">
+                                                            <tr>
+                                                                <th>Statut:</th>
+                                                                <td>
+                                                                    {% if test.status == 'OK' %}
+                                                                    <span class="badge bg-success">OK</span>
+                                                                    {% else %}
+                                                                    <span class="badge bg-danger">NOK</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Durée:</th>
+                                                                <td>{{ test.duree_test|floatformat:2 }} secondes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Message:</th>
+                                                                <td>{{ test.message_erreur|default:"-" }}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                {% if test.steps.all %}
+                                                <div class="mt-4">
+                                                    <h6>Étapes du Test</h6>
+                                                    <table class="table table-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Description</th>
+                                                                <th>Statut</th>
+                                                                <th>Message</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for step in test.steps.all %}
+                                                            <tr>
+                                                                <td>{{ step.numero }}</td>
+                                                                <td>{{ step.description }}</td>
+                                                                <td>
+                                                                    {% if step.status == 'OK' %}
+                                                                    <span class="badge bg-success">OK</span>
+                                                                    {% else %}
+                                                                    <span class="badge bg-danger">NOK</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>{{ step.message|default:"-" }}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Aucun test trouvé pour les critères sélectionnés</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialisation de DataTables
+    $(document).ready(function() {
+        $('#auditTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            },
+            "order": [[0, "desc"]],
+            "pageLength": 25
+        });
+    });
+</script>
+{% endblock %}

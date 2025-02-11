@@ -1,83 +1,130 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <!-- Formulaire de configuration -->
-        <div class="col-md-6">
+        <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h5>Configurer une nouvelle alerte</h5>
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>
+                        Configuration des Alertes
+                    </h4>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="use_case" class="form-label">Use Case</label>
-                            <select class="form-select" id="use_case" name="use_case" required>
-                                <option value="">Sélectionner un use case</option>
-                                {% for use_case in use_cases %}
-                                <option value="{{ use_case.id }}">
-                                    {{ use_case.canal.code }} - {{ use_case.nom }}
-                                </option>
-                                {% endfor %}
-                            </select>
+                        
+                        <!-- Liste des configurations existantes -->
+                        <div class="mb-4">
+                            <h5>Configurations Actives</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Canal</th>
+                                            <th>Use Case</th>
+                                            <th>Email</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for config in alert_configs %}
+                                        <tr>
+                                            <td>{{ config.use_case.canal.code }}</td>
+                                            <td>{{ config.use_case.nom }}</td>
+                                            <td>{{ config.email }}</td>
+                                            <td>
+                                                {% if config.is_active %}
+                                                <span class="badge bg-success">Actif</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="submit" name="delete" value="{{ config.id }}" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center">Aucune configuration d'alerte</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Ajouter l'alerte</button>
-                    </form>
-                </div>
-            </div>
-        </div>
 
-        <!-- Liste des alertes configurées -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Alertes configurées</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Canal</th>
-                                    <th>Use Case</th>
-                                    <th>Email</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for alert in user_alerts %}
-                                <tr>
-                                    <td>{{ alert.use_case.canal.code }}</td>
-                                    <td>{{ alert.use_case.nom }}</td>
-                                    <td>{{ alert.email }}</td>
-                                    <td>
-                                        <form method="post" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="alert_id" value="{{ alert.id }}">
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Supprimer
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center">Aucune alerte configurée</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                        <!-- Formulaire d'ajout -->
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Ajouter une Nouvelle Alerte</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="canal" class="form-label">Canal USSD</label>
+                                        <select class="form-select" id="canal" name="canal" required>
+                                            <option value="">Sélectionner un canal</option>
+                                            {% for canal in canaux %}
+                                            <option value="{{ canal.id }}">{{ canal.code }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="use_case" class="form-label">Use Case</label>
+                                        <select class="form-select" id="use_case" name="use_case" required>
+                                            <option value="">Sélectionner un use case</option>
+                                            {% for use_case in use_cases %}
+                                            <option value="{{ use_case.id }}" data-canal="{{ use_case.canal.id }}">
+                                                {{ use_case.nom }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Ajouter l'Alerte
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filtrer les use cases en fonction du canal sélectionné
+    document.getElementById('canal').addEventListener('change', function() {
+        const canalId = this.value;
+        const useCaseSelect = document.getElementById('use_case');
+        const useCaseOptions = useCaseSelect.querySelectorAll('option');
+        
+        useCaseOptions.forEach(option => {
+            if (option.value === '') return; // Skip placeholder option
+            if (option.dataset.canal === canalId) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+        
+        // Reset use case selection
+        useCaseSelect.value = '';
+    });
+</script>
 {% endblock %}

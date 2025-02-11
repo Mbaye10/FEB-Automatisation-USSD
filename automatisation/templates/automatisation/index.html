@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Tableau de Bord - Audit Parcours USSD
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Statistiques générales -->
+                        <div class="col-md-3">
+                            <div class="card stats-card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Tests</h5>
+                                    <h2 class="mb-0">{{ total_tests }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Tests OK</h5>
+                                    <h2 class="mb-0">{{ tests_ok }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Tests NOK</h5>
+                                    <h2 class="mb-0">{{ tests_nok }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card bg-warning text-dark">
+                                <div class="card-body">
+                                    <h5 class="card-title">Taux Dysfonctionnement</h5>
+                                    <h2 class="mb-0">{{ taux_dysfonctionnement }}%</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tests en échec récents -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Tests en Échec Récents
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Canal</th>
+                                    <th>Use Case</th>
+                                    <th>Date</th>
+                                    <th>Message d'erreur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in tests_en_echec %}
+                                <tr>
+                                    <td>{{ test.use_case.canal.code }}</td>
+                                    <td>{{ test.use_case.nom }}</td>
+                                    <td>{{ test.date_test|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ test.message_erreur|default:"N/A" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucun test en échec récent</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lien vers le dashboard détaillé -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-chart-bar me-2"></i>
+                Voir le Dashboard Détaillé
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Active les tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+{% endblock %}

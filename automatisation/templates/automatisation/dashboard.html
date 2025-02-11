@@ -1,85 +1,81 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="container-fluid mt-4">
-    <!-- En-tête du Dashboard -->
+    <!-- Filtres -->
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="text-primary">Dashboard FEB Automatisation Audit Parcours USSD</h2>
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label">Date début</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label">Date fin</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="canal" class="form-label">Canal USSD</label>
+                            <select class="form-select" id="canal" name="canal">
+                                <option value="">Tous les canaux</option>
+                                {% for canal in canaux %}
+                                <option value="{{ canal.id }}" {% if selected_canal == canal.id %}selected{% endif %}>
+                                    {{ canal.code }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Filtrer
+                            </button>
+                            <a href="{% url 'export_results' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                                <i class="fas fa-file-excel me-2"></i>Exporter
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Filtres -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Filtres</h5>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-3">
-                    <label for="start_date" class="form-label">Date début</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
-                </div>
-                <div class="col-md-3">
-                    <label for="end_date" class="form-label">Date fin</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
-                </div>
-                <div class="col-md-3">
-                    <label for="canal" class="form-label">Canal USSD</label>
-                    <select class="form-select" id="canal" name="canal">
-                        <option value="">Tous les canaux</option>
-                        {% for canal in canaux %}
-                        <option value="{{ canal.id }}" {% if selected_canal == canal.id %}selected{% endif %}>
-                            {{ canal.code }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Filtrer</button>
-                    <a href="{% url 'export_results' %}?{{ request.GET.urlencode }}" class="btn btn-success">
-                        <i class="fas fa-file-excel"></i> Exporter en Excel
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Statistiques Globales -->
+    <!-- Statistiques -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card bg-primary text-white h-100">
+            <div class="card bg-primary text-white">
                 <div class="card-body">
                     <h5 class="card-title">Total Tests</h5>
-                    <p class="display-4">{{ stats.total_tests }}</p>
-                    <p class="card-text">Tests effectués sur la période</p>
+                    <h2>{{ stats.total_tests }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white h-100">
+            <div class="card bg-success text-white">
                 <div class="card-body">
                     <h5 class="card-title">Tests OK</h5>
-                    <p class="display-4">{{ stats.tests_ok }}</p>
-                    <p class="card-text">Tests réussis</p>
+                    <h2>{{ stats.tests_ok }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-danger text-white h-100">
+            <div class="card bg-danger text-white">
                 <div class="card-body">
                     <h5 class="card-title">Tests NOK</h5>
-                    <p class="display-4">{{ stats.tests_nok }}</p>
-                    <p class="card-text">Tests en échec</p>
+                    <h2>{{ stats.tests_nok }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-white h-100">
+            <div class="card bg-warning">
                 <div class="card-body">
-                    <h5 class="card-title">Taux de dysfonctionnement</h5>
-                    <p class="display-4">{{ stats.taux_dysfonctionnement }}%</p>
-                    <p class="card-text">Pourcentage d'échecs</p>
+                    <h5 class="card-title">Taux Dysfonctionnement</h5>
+                    <h2>{{ stats.taux_dysfonctionnement }}%</h2>
                 </div>
             </div>
         </div>
@@ -87,116 +83,73 @@
 
     <!-- Graphiques -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Évolution des tests par jour</h5>
+                    <h5 class="mb-0">Évolution des Tests</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="testsEvolutionChart"></canvas>
+                    <canvas id="evolutionChart"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Répartition par canal USSD</h5>
+                    <h5 class="mb-0">Distribution par Canal</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="canalDistributionChart"></canvas>
+                    <canvas id="canalChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Liste détaillée des tests en échec -->
-    <div class="card">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Détail des tests en échec</h5>
-            <div>
-                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#alertConfigModal">
-                    <i class="fas fa-bell"></i> Configurer les alertes
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover" id="failedTestsTable">
-                    <thead>
-                        <tr>
-                            <th>Numéro</th>
-                            <th>Canal</th>
-                            <th>Use Case</th>
-                            <th>Étape</th>
-                            <th>Date et heure</th>
-                            <th>Message d'erreur</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for test in failed_tests %}
-                        <tr>
-                            <td>{{ test.numero_telephone }}</td>
-                            <td>{{ test.test_result.use_case.canal.code }}</td>
-                            <td>{{ test.test_result.use_case.nom }}</td>
-                            <td>{{ test.step.step_number }}</td>
-                            <td>{{ test.date_heure|date:"d/m/Y H:i" }}</td>
-                            <td>{{ test.message_erreur }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="showTestDetails('{{ test.id }}')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center">Aucun test en échec pour la période sélectionnée</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- Tests en échec -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Tests en Échec</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Canal</th>
+                                    <th>Use Case</th>
+                                    <th>Date</th>
+                                    <th>Message d'erreur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in failed_tests %}
+                                <tr>
+                                    <td>{{ test.use_case.canal.code }}</td>
+                                    <td>{{ test.use_case.nom }}</td>
+                                    <td>{{ test.date_test|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ test.message_erreur|default:"N/A" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucun test en échec pour la période sélectionnée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Modal Configuration Alertes -->
-<div class="modal fade" id="alertConfigModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Configuration des alertes</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="alertConfigForm" method="post" action="{% url 'alert_configuration' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="useCase" class="form-label">Use Case à surveiller</label>
-                        <select class="form-select" id="useCase" name="use_case" required>
-                            {% for use_case in use_cases %}
-                            <option value="{{ use_case.id }}">{{ use_case.canal.code }} - {{ use_case.nom }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email pour les alertes</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Graphique d'évolution des tests
-    const evolutionCtx = document.getElementById('testsEvolutionChart').getContext('2d');
+    // Graphique d'évolution
+    var evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
     new Chart(evolutionCtx, {
         type: 'line',
         data: {
@@ -204,55 +157,62 @@
             datasets: [{
                 label: 'Tests OK',
                 data: {{ evolution_ok|safe }},
-                borderColor: 'rgb(40, 167, 69)',
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
                 tension: 0.1
             }, {
                 label: 'Tests NOK',
                 data: {{ evolution_nok|safe }},
-                borderColor: 'rgb(220, 53, 69)',
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
                 tension: 0.1
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Évolution des tests sur la période'
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
         }
     });
 
     // Graphique de distribution par canal
-    const distributionCtx = document.getElementById('canalDistributionChart').getContext('2d');
-    new Chart(distributionCtx, {
-        type: 'pie',
+    var canalCtx = document.getElementById('canalChart').getContext('2d');
+    new Chart(canalCtx, {
+        type: 'doughnut',
         data: {
             labels: {{ canal_labels|safe }},
             datasets: [{
                 data: {{ canal_data|safe }},
                 backgroundColor: [
-                    'rgb(40, 167, 69)',
-                    'rgb(220, 53, 69)',
-                    'rgb(255, 193, 7)',
-                    'rgb(23, 162, 184)'
+                    '#0d6efd',
+                    '#198754',
+                    '#dc3545',
+                    '#ffc107',
+                    '#0dcaf0',
+                    '#6610f2',
+                    '#d63384',
+                    '#fd7e14'
                 ]
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Distribution des tests par canal'
+                legend: {
+                    position: 'right',
                 }
             }
         }
     });
-
-    function showTestDetails(testId) {
-        // Implémenter l'affichage des détails du test
-    }
 </script>
 {% endblock %}
